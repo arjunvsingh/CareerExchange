@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { AuthProvider } from './context/authContext';
+import JobPostingForm from './components/forms/JobPostingForm';
+import JobsPage from './pages/JobsPage';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <nav className="bg-white shadow-lg w-full">
+            <div className="max-w mx-auto px-6 w-full">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex space-x-8">
+                  <Link 
+                    to="/" 
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    Job Board
+                  </Link>
+                  <Link 
+                    to="/post-job" 
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    Post a Job
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </nav>
 
-export default App
+          <main className="flex-1 w-full bg-gray-50">
+            <div className="max-w-[2000px] mx-auto px-6 py-8 w-full">
+              <Routes>
+                <Route path="/" element={<JobsPage />} />
+                <Route path="/post-job" element={<JobPostingForm />} />
+              </Routes>
+            </div>
+          </main>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+};
+
+export default App;
