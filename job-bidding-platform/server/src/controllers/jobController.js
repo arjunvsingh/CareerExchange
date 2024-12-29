@@ -1,10 +1,39 @@
 const Job = require('../models/Job');
 
+const validateJobData = (jobData) => {
+  const { title, company, description, skills, timeline } = jobData;
+  
+  if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    throw new Error('Title is required');
+  }
+  if (!company || typeof company !== 'string' || company.trim().length === 0) {
+    throw new Error('Company is required');
+  }
+  if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    throw new Error('Description is required');
+  }
+  if (!skills || typeof skills !== 'string' || skills.trim().length === 0) {
+    throw new Error('Skills are required');
+  }
+  if (!timeline || typeof timeline !== 'string' || timeline.trim().length === 0) {
+    throw new Error('Timeline is required');
+  }
+};
+
 const jobController = {
   // Create a new job posting
   async createJob(req, res, next) {
     try {
       const jobData = req.body;
+      validateJobData(jobData);
+      
+      // Trim whitespace from string fields
+      Object.keys(jobData).forEach(key => {
+        if (typeof jobData[key] === 'string') {
+          jobData[key] = jobData[key].trim();
+        }
+      });
+
       const newJob = await Job.create(jobData);
       res.status(201).json({
         success: true,
@@ -55,6 +84,8 @@ const jobController = {
     try {
       const { id } = req.params;
       const jobData = req.body;
+      validateJobData(jobData);
+
       const updatedJob = await Job.update(id, jobData);
 
       if (!updatedJob) {
