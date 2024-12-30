@@ -2,11 +2,11 @@ services:
   - type: web
     name: job-bidding-platform
     env: node
-    buildCommand: cd client && npm install && cd ../server && npm install
-    startCommand: cd client && npm run dev & cd ../server && npm start
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install
+    startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
-        value: development
+        value: production
       - key: DB_USER
         sync: false
       - key: DB_HOST
@@ -21,6 +21,4 @@ services:
         generateValue: true
       - key: PORT
         value: 3000
-      - key: VITE_API_URL
-        value: "http://localhost:3000"
     healthCheckPath: /api/health
