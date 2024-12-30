@@ -33,29 +33,33 @@ const Layout = ({ children }) => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex space-x-8">
-              <Link 
-                to="/" 
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
-                  isActive('/') 
-                    ? "text-black" 
-                    : "text-muted-foreground"
-                )}
-              >
-                Job Board
-              </Link>
-              {user && isEmployer() && (
-                <Link 
-                  to="/post-job"
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    isActive('/post-job') 
-                      ? "text-black" 
-                      : "text-muted-foreground"
+              {user && (
+                <>
+                  <Link 
+                    to="/" 
+                    className={cn(
+                      "text-sm font-medium transition-colors hover:text-primary",
+                      isActive('/') 
+                        ? "text-black" 
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    Job Board
+                  </Link>
+                  {isEmployer() && (
+                    <Link 
+                      to="/post-job"
+                      className={cn(
+                        "text-sm font-medium transition-colors hover:text-primary",
+                        isActive('/post-job') 
+                          ? "text-black" 
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      Post a Job
+                    </Link>
                   )}
-                >
-                  Post a Job
-                </Link>
+                </>
               )}
             </div>
 

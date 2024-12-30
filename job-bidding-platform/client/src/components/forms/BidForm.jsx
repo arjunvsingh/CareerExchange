@@ -7,11 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { DialogButton } from "@/components/ui/dialog-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useAuth } from '../../context/authContext';
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
 const BidForm = ({ job, isOpen, onClose, onBidSubmitted }) => {
@@ -19,9 +21,18 @@ const BidForm = ({ job, isOpen, onClose, onBidSubmitted }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    amount: '',
+    rateMin: 20,
+    rateMax: 50,
     proposal: '',
-    estimatedDuration: ''
+    startDate: '',
+    weeklyHours: '',
+    workingHours: '',
+    timezone: '',
+    milestones: '',
+    technicalApproach: '',
+    deliverables: '',
+    relevantExperience: '',
+    portfolioLinks: ''
   });
 
   const handleChange = (e) => {
@@ -29,6 +40,14 @@ const BidForm = ({ job, isOpen, onClose, onBidSubmitted }) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleRateChange = (values) => {
+    setFormData(prev => ({
+      ...prev,
+      rateMin: values[0],
+      rateMax: values[1]
     }));
   };
 
@@ -62,7 +81,7 @@ const BidForm = ({ job, isOpen, onClose, onBidSubmitted }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Submit a Bid</DialogTitle>
           <DialogDescription>
@@ -76,54 +95,174 @@ const BidForm = ({ job, isOpen, onClose, onBidSubmitted }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="amount">Bid Amount ($)</Label>
-            <Input
-              id="amount"
-              name="amount"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.amount}
-              onChange={handleChange}
-              placeholder="Enter your bid amount"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Tabs defaultValue="basics" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="basics">Basics</TabsTrigger>
+              <TabsTrigger value="approach">Approach</TabsTrigger>
+              <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="estimatedDuration">Estimated Duration</Label>
-            <Input
-              id="estimatedDuration"
-              name="estimatedDuration"
-              value={formData.estimatedDuration}
-              onChange={handleChange}
-              placeholder="e.g. 2 weeks, 1 month"
-              required
-            />
-          </div>
+            <TabsContent value="basics" className="space-y-4">
+              {/* Rate Range Slider */}
+              <div className="space-y-2">
+                <Label>Hourly Rate Range ($)</Label>
+                <div className="pt-6">
+                  <Slider
+                    defaultValue={[formData.rateMin, formData.rateMax]}
+                    max={200}
+                    min={10}
+                    step={5}
+                    onValueChange={handleRateChange}
+                  />
+                  <div className="flex justify-between mt-2 text-sm text-gray-600">
+                    <span>${formData.rateMin}/hr</span>
+                    <span>${formData.rateMax}/hr</span>
+                  </div>
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="proposal">Your Proposal</Label>
-            <Textarea
-              id="proposal"
-              name="proposal"
-              value={formData.proposal}
-              onChange={handleChange}
-              placeholder="Describe why you're the best fit for this job..."
-              className="min-h-[100px]"
-              required
-            />
-          </div>
+              {/* Availability Section */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Available Start Date</Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+                <div className="space-y-2">
+                  <Label htmlFor="weeklyHours">Weekly Availability (hours)</Label>
+                  <Input
+                    id="weeklyHours"
+                    name="weeklyHours"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={formData.weeklyHours}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="workingHours">Preferred Working Hours</Label>
+                  <Input
+                    id="workingHours"
+                    name="workingHours"
+                    placeholder="e.g. 9 AM - 5 PM"
+                    value={formData.workingHours}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">Your Timezone</Label>
+                  <Input
+                    id="timezone"
+                    name="timezone"
+                    placeholder="e.g. UTC-5, EST"
+                    value={formData.timezone}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="approach" className="space-y-4">
+              {/* Project Understanding Section */}
+              <div className="space-y-2">
+                <Label htmlFor="proposal">Cover Letter</Label>
+                <Textarea
+                  id="proposal"
+                  name="proposal"
+                  value={formData.proposal}
+                  onChange={handleChange}
+                  placeholder="Introduce yourself and explain why you're the best fit for this job..."
+                  className="min-h-[100px]"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="milestones">Project Milestones</Label>
+                <Textarea
+                  id="milestones"
+                  name="milestones"
+                  value={formData.milestones}
+                  onChange={handleChange}
+                  placeholder="Break down the project into key milestones and estimated completion dates..."
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="technicalApproach">Technical Approach</Label>
+                <Textarea
+                  id="technicalApproach"
+                  name="technicalApproach"
+                  value={formData.technicalApproach}
+                  onChange={handleChange}
+                  placeholder="Describe your technical approach, methodology, and tools you plan to use..."
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deliverables">Deliverables</Label>
+                <Textarea
+                  id="deliverables"
+                  name="deliverables"
+                  value={formData.deliverables}
+                  onChange={handleChange}
+                  placeholder="List the specific deliverables you will provide..."
+                  className="min-h-[100px]"
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="qualifications" className="space-y-4">
+              {/* Qualifications Section */}
+              <div className="space-y-2">
+                <Label htmlFor="relevantExperience">Relevant Experience</Label>
+                <Textarea
+                  id="relevantExperience"
+                  name="relevantExperience"
+                  value={formData.relevantExperience}
+                  onChange={handleChange}
+                  placeholder="Describe your relevant experience and similar projects you've completed..."
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="portfolioLinks">Portfolio Links</Label>
+                <Textarea
+                  id="portfolioLinks"
+                  name="portfolioLinks"
+                  value={formData.portfolioLinks}
+                  onChange={handleChange}
+                  placeholder="Share links to relevant portfolio items, GitHub repositories, or live projects..."
+                  className="min-h-[100px]"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <DialogButton type="button" variant="outline" onClick={onClose}>
               Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
+            </DialogButton>
+            <DialogButton type="submit" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Bid'}
-            </Button>
+            </DialogButton>
           </div>
         </form>
       </DialogContent>

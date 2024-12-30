@@ -1,31 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Container, Card, Button, Row, Col } from 'react-bootstrap';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
 const JobDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         const response = await api.jobs.getById(id);
-        setJob(response.data);
+        if (response.success) {
+          setJob(response.data);
+        }
       } catch (err) {
-        console.error('Error fetching job details:', err);
-        setError('Failed to load job details. Please try again later.');
+        setError('Failed to load job details');
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -35,91 +31,78 @@ const JobDetailsPage = () => {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 text-red-600 p-4 rounded-md">
-          {error}
-        </div>
-      </div>
-    );
+    return <div>Error: {error}</div>;
   }
 
   if (!job) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Job Not Found</h2>
-          <Button onClick={() => navigate('/')}>Back to Job Board</Button>
-        </div>
-      </div>
-    );
+    return <div>Job not found</div>;
   }
 
-  const skillsList = job.skills.split(',').map(skill => skill.trim());
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <CardTitle className="text-3xl mb-2">{job.title}</CardTitle>
-              <CardDescription className="text-xl">{job.company}</CardDescription>
-            </div>
-            <Badge variant="outline" className="text-lg px-4 py-1">
-              {job.timeline}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-xl font-semibold mb-2">Description</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
-          </div>
+    <Container className="py-4">
+      <Card>
+        <Card.Body>
+          <Card.Title className="h3 mb-4">{job.title}</Card.Title>
+          
+          <Row className="mb-4">
+            <Col md={6}>
+              <h5>Company</h5>
+              <p>{job.company}</p>
+            </Col>
+            <Col md={6}>
+              <h5>Posted by</h5>
+              <p>{job.employer_name}</p>
+            </Col>
+          </Row>
 
-          <div>
-            <h3 className="text-xl font-semibold mb-2">Required Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {skillsList.map((skill, index) => (
-                <Badge key={index} variant="secondary">
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-          </div>
+          <Row className="mb-4">
+            <Col>
+              <h5>Description</h5>
+              <p>{job.description}</p>
+            </Col>
+          </Row>
+
+          <Row className="mb-4">
+            <Col md={6}>
+              <h5>Required Skills</h5>
+              <p>{job.skills}</p>
+            </Col>
+            <Col md={6}>
+              <h5>Timeline</h5>
+              <p>{job.timeline}</p>
+            </Col>
+          </Row>
 
           {job.requirements && (
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Additional Requirements</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{job.requirements}</p>
-            </div>
+            <Row className="mb-4">
+              <Col>
+                <h5>Additional Requirements</h5>
+                <p>{job.requirements}</p>
+              </Col>
+            </Row>
           )}
 
-          <div className="flex justify-between items-center pt-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-            >
-              Back to Job Board
+          <div className="d-flex justify-content-between align-items-center">
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Back to Jobs
             </Button>
-            <Button
-              onClick={() => navigate(`/jobs/${id}/bid`)}
-              className="bg-black hover:bg-gray-800"
-            >
-              Place Bid
-            </Button>
+            
+            {user && user.role === 'applicant' && (
+              <Button 
+                variant="primary"
+                onClick={() => navigate(`/jobs/${id}/bid`)}
+              >
+                Place Bid
+              </Button>
+            )}
           </div>
-        </CardContent>
+        </Card.Body>
       </Card>
-    </div>
+    </Container>
   );
 };
 

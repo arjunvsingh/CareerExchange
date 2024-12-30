@@ -12,6 +12,7 @@ import JobDetailsPage from './pages/JobDetailsPage';
 import PostJobPage from './pages/PostJobPage';
 import EmployerDashboard from './pages/employer/EmployerDashboard';
 import ApplicantDashboard from './pages/applicant/ApplicantDashboard';
+import PlaceBidPage from './pages/PlaceBidPage';
 
 const App = () => {
   return (
@@ -56,7 +57,7 @@ const App = () => {
               path="/jobs/:id/bid"
               element={
                 <ProtectedRoute allowedRoles={[UserRole.APPLICANT]}>
-                  <JobDetailsPage />
+                  <PlaceBidPage />
                 </ProtectedRoute>
               }
             />
