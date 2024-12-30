@@ -1,5 +1,6 @@
 // components/jobs/JobCard.jsx
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -9,67 +10,50 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from '../../context/authContext';
-import BidForm from '../forms/BidForm';
+import { Badge } from "@/components/ui/badge";
 
 const JobCard = ({ job }) => {
-  const { isAuthenticated, isFreelancer } = useAuth();
-  const [isBidModalOpen, setIsBidModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { id, title, company, description, skills, timeline } = job;
 
-  const handleBidClick = () => {
-    if (!isAuthenticated) {
-      // You might want to redirect to login or show a login modal
-      alert('Please login to submit a bid');
-      return;
-    }
-    setIsBidModalOpen(true);
-  };
-
-  const handleBidSubmitted = () => {
-    // You might want to refresh the job data or show a success message
-    alert('Bid submitted successfully!');
-  };
+  const skillsList = skills.split(',').map(skill => skill.trim());
 
   return (
-    <>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{job.title}</CardTitle>
-          <CardDescription>{job.company}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex justify-between items-start">
           <div>
-            <h4 className="font-semibold">Description</h4>
-            <p className="text-sm text-gray-600">{job.description}</p>
+            <CardTitle className="text-xl">{title}</CardTitle>
+            <CardDescription className="text-base mt-1">{company}</CardDescription>
           </div>
-          <div>
-            <h4 className="font-semibold">Required Skills</h4>
-            <p className="text-sm text-gray-600">{job.skills}</p>
-          </div>
-          <div>
-            <h4 className="font-semibold">Timeline</h4>
-            <p className="text-sm text-gray-600">{job.timeline}</p>
-          </div>
-        </CardContent>
-        <CardFooter>
-          {isFreelancer && (
-            <Button 
-              className="w-full" 
-              onClick={handleBidClick}
-            >
-              Place Bid
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-
-      <BidForm
-        job={job}
-        isOpen={isBidModalOpen}
-        onClose={() => setIsBidModalOpen(false)}
-        onBidSubmitted={handleBidSubmitted}
-      />
-    </>
+          <Badge variant="outline">{timeline}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 mb-4 line-clamp-3">{description}</p>
+        <div className="flex flex-wrap gap-2">
+          {skillsList.map((skill, index) => (
+            <Badge key={index} variant="secondary">
+              {skill}
+            </Badge>
+          ))}
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={() => navigate(`/jobs/${id}`)}
+        >
+          View Details
+        </Button>
+        <Button
+          onClick={() => navigate(`/jobs/${id}/bid`)}
+          className="bg-black hover:bg-gray-800"
+        >
+          Place Bid
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

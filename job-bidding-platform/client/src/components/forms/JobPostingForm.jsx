@@ -26,6 +26,8 @@ const JobPostingForm = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    setError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -34,10 +36,16 @@ const JobPostingForm = () => {
     setError(null);
 
     try {
-      await api.jobs.create(formData);
-      navigate('/');
+      const response = await api.jobs.create(formData);
+      if (response.success) {
+        navigate('/');
+      } else {
+        setError(response.error || 'Failed to create job posting');
+      }
     } catch (err) {
-      setError('Failed to create job posting. Please try again.');
+      console.error('Error creating job:', err);
+      setError(err.response?.data?.error || 'Failed to create job posting. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
