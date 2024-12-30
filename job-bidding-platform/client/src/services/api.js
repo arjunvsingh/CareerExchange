@@ -20,6 +20,31 @@ apiClient.interceptors.request.use((config) => {
 });
 
 const api = {
+  // Auth related endpoints
+  auth: {
+    login: async (email, password) => {
+      const response = await apiClient.post('/auth/login', { email, password });
+      return response;
+    },
+    
+    register: async (userData) => {
+      const response = await apiClient.post('/auth/register', userData);
+      return response;
+    },
+    
+    verify: async () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user?.token) return false;
+      const response = await apiClient.post('/auth/verify-token', { token: user.token });
+      return response.data.valid;
+    },
+    
+    logout: async () => {
+      const response = await apiClient.post('/auth/logout');
+      return response.data;
+    }
+  },
+
   // Job related endpoints
   jobs: {
     create: async (jobData) => {

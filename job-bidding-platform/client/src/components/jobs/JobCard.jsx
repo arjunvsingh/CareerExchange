@@ -1,6 +1,7 @@
 // components/jobs/JobCard.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 
 const JobCard = ({ job }) => {
   const navigate = useNavigate();
+  const { user, isApplicant } = useAuth();
   const { id, title, company, description, skills, timeline } = job;
 
   const skillsList = skills.split(',').map(skill => skill.trim());
@@ -46,12 +48,14 @@ const JobCard = ({ job }) => {
         >
           View Details
         </Button>
-        <Button
-          onClick={() => navigate(`/jobs/${id}/bid`)}
-          className="bg-black hover:bg-gray-800"
-        >
-          Place Bid
-        </Button>
+        {user && isApplicant() && (
+          <Button
+            onClick={() => navigate(`/jobs/${id}/bid`)}
+            className="bg-black hover:bg-gray-800"
+          >
+            Place Bid
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

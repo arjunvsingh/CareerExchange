@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const jobController = require('../controllers/jobController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// POST /api/jobs - Create a new job
+// Protected routes (require authentication)
+router.use(authMiddleware);
 router.post('/', jobController.createJob);
-
-// GET /api/jobs - Get all jobs
-router.get('/', jobController.getAllJobs);
-
-// GET /api/jobs/:id - Get a specific job
-router.get('/:id', jobController.getJobById);
-
-// PUT /api/jobs/:id - Update a job
+router.get('/my-posts', jobController.getMyPostedJobs);
 router.put('/:id', jobController.updateJob);
+
+// Public routes
+router.get('/', jobController.getAllJobs);
+router.get('/:id', jobController.getJobById);
 
 module.exports = router;

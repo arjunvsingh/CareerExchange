@@ -24,7 +24,10 @@ const jobController = {
   // Create a new job posting
   async createJob(req, res, next) {
     try {
-      const jobData = req.body;
+      const jobData = {
+        ...req.body,
+        employer_id: req.user.id // Add employer_id from authenticated user
+      };
       validateJobData(jobData);
       
       // Trim whitespace from string fields
@@ -57,23 +60,62 @@ const jobController = {
     }
   },
 
+  // Get jobs posted by the current employer
+  async getMyPostedJobs(req, res, next) {
+    try {
+      if (!req.user || req.user.role !== 'employer') {
+        return res.status(403).json({
+          success: false,
+          error: 'Only employers can access their posted jobs'
+        });
+      }
+
+      const jobs = await Job.findByEmployerId(req.user.id);
+      res.status(200).json({
+        success: true,
+        data: jobs
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Get a single job posting
   async getJobById(req, res, next) {
     try {
       const { id } = req.params;
-      const job = await Job.findById(id);
       
-      if (!job) {
-        return res.status(404).json({
+      // Validate id format
+      if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({
           success: false,
-          error: 'Job not found'
+          error: 'Invalid job ID format'
         });
       }
 
-      res.status(200).json({
-        success: true,
-        data: job
-      });
+      try {
+        const job = await Job.findById(parseInt(id));
+        
+        if (!job) {
+          return res.status(404).json({
+            success: false,
+            error: 'Job not found'
+          });
+        }
+
+        res.status(200).json({
+          success: true,
+          data: job
+        });
+      } catch (error) {
+        if (error.message === 'Invalid job ID') {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid job ID format'
+          });
+        }
+        throw error;
+      }
     } catch (error) {
       next(error);
     }

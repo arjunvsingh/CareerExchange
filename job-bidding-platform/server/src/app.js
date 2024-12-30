@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const jobRoutes = require('./routes/jobRoutes');
+const authRoutes = require('./routes/authRoutes');
+const bidRoutes = require('./routes/bidRoutes');
+const authMiddleware = require('./middleware/authMiddleware');
 const errorHandler = require('./middleware/errorHandler');
 
 // Load environment variables
@@ -16,7 +19,9 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api', authMiddleware, bidRoutes); // Protected bid routes
 
 // Error handling
 app.use(errorHandler);

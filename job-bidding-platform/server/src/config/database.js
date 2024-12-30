@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const pool = new Pool({
@@ -17,6 +18,16 @@ const initializeDatabase = async () => {
 
     // Create tables if they don't exist
     await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) NOT NULL CHECK (role IN ('employer', 'applicant')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS jobs (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -25,6 +36,7 @@ const initializeDatabase = async () => {
         skills TEXT NOT NULL,
         timeline VARCHAR(255) NOT NULL,
         requirements TEXT,
+        employer_id INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -32,7 +44,7 @@ const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS bids (
         id SERIAL PRIMARY KEY,
         job_id INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
-        user_id INTEGER NOT NULL,
+        user_id INTEGER REFERENCES users(id),
         rate DECIMAL NOT NULL,
         proposal TEXT NOT NULL,
         availability VARCHAR(255) NOT NULL,
@@ -41,6 +53,29 @@ const initializeDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Create default users if they don't exist
+    const defaultPassword = 'password123';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    // Check if default users exist
+    const existingUsers = await client.query(
+      'SELECT email FROM users WHERE email IN ($1, $2)',
+      ['employer@test.com', 'applicant@test.com']
+    );
+
+    if (existingUsers.rows.length < 2) {
+      // Insert default users if they don't exist
+      await client.query(`
+        INSERT INTO users (name, email, password, role)
+        VALUES 
+          ('Test Employer', 'employer@test.com', $1, 'employer'),
+          ('Test Applicant', 'applicant@test.com', $1, 'applicant')
+        ON CONFLICT (email) DO NOTHING;
+      `, [hashedPassword]);
+      console.log('Default users created');
+    }
+
     console.log('Database tables initialized');
     client.release();
   } catch (err) {

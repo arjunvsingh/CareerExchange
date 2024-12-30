@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import JobList from '../components/jobs/JobList';
 import { Button } from '@/components/ui/button';
 import api from '../services/api';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { user, isEmployer } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,12 +32,14 @@ const HomePage = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Available Jobs</h1>
-        <Button 
-          onClick={() => navigate('/post-job')}
-          className="bg-black hover:bg-gray-800"
-        >
-          Post a Job
-        </Button>
+        {user && isEmployer() && (
+          <Button 
+            onClick={() => navigate('/post-job')}
+            className="bg-black hover:bg-gray-800"
+          >
+            Post a Job
+          </Button>
+        )}
       </div>
 
       {error && (
