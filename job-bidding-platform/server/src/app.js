@@ -1,7 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const corsOptions =  {
-  origin : 'https://localhost:3000',
+  origin : [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000',
+    'https://careerexchange.onrender.com',
+    'https://career-exchange.onrender.com',
+    process.env.CLIENT_URL
+  ].filter(Boolean),
   credentials : true,
   optionSuccessStatus : 200
 }
@@ -14,7 +21,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Health check endpoint for Render
+// Health check endpoint for Render 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
