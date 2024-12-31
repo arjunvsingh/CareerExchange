@@ -87,7 +87,7 @@ const JobDetailsPage = () => {
           )}
 
           <div className="d-flex justify-content-between align-items-center">
-            <Button variant="secondary" onClick={() => navigate(-1)}>
+            <Button variant="secondary" onClick={() => navigate('/')}>
               Back to Jobs
             </Button>
             

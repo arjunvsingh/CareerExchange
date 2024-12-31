@@ -1,12 +1,17 @@
 const express = require('express');
 const cors = require('cors');
+const corsOptions =  {
+  origin : 'https://localhost:3000',
+  credentials : true,
+  optionSuccessStatus : 200
+}
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Health check endpoint for Render
