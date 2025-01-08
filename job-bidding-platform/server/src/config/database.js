@@ -8,15 +8,14 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Test the connection and create tables if they don't exist
 const initializeDatabase = async () => {
+  const client = await pool.connect();
   try {
-    const client = await pool.connect();
-    console.log('Database connected successfully');
-
-    // Create tables if they don't exist
+    // Create tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -54,26 +53,28 @@ const initializeDatabase = async () => {
       );
     `);
 
-    // Create default users if they don't exist
-    const defaultPassword = 'password123';
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    // Only create default users in development
+    if (process.env.NODE_ENV !== 'production') {
+      const defaultPassword = 'password123';
+      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    // Check if default users exist
-    const existingUsers = await client.query(
-      'SELECT email FROM users WHERE email IN ($1, $2)',
-      ['employer@test.com', 'applicant@test.com']
-    );
+      // Check if default users exist
+      const existingUsers = await client.query(
+        'SELECT email FROM users WHERE email IN ($1, $2)',
+        ['employer@test.com', 'applicant@test.com']
+      );
 
-    if (existingUsers.rows.length < 2) {
-      // Insert default users if they don't exist
-      await client.query(`
-        INSERT INTO users (name, email, password, role)
-        VALUES 
-          ('Test Employer', 'employer@test.com', $1, 'employer'),
-          ('Test Applicant', 'applicant@test.com', $1, 'applicant')
-        ON CONFLICT (email) DO NOTHING;
-      `, [hashedPassword]);
-      console.log('Default users created');
+      if (existingUsers.rows.length < 2) {
+        // Insert default users if they don't exist
+        await client.query(`
+          INSERT INTO users (name, email, password, role)
+          VALUES 
+            ('Test Employer', 'employer@test.com', $1, 'employer'),
+            ('Test Applicant', 'applicant@test.com', $1, 'applicant')
+          ON CONFLICT (email) DO NOTHING;
+        `, [hashedPassword]);
+        console.log('Default users created');
+      }
     }
 
     console.log('Database tables initialized');
@@ -82,24 +83,6 @@ const initializeDatabase = async () => {
     console.error('Database initialization error:', err);
     throw err;
   }
-};
+}
 
-// Initialize database on startup
-initializeDatabase().catch(console.error);
-
-// Export a function that wraps the query with error handling
-module.exports = {
-  query: async (text, params) => {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(text, params);
-      return result;
-    } catch (err) {
-      console.error('Database query error:', err);
-      throw err;
-    } finally {
-      client.release();
-    }
-  },
-  pool
-};
+module.exports = pool;

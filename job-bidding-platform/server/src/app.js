@@ -7,6 +7,7 @@ const corsOptions =  {
     'http://localhost:3000',
     'https://careerexchange.onrender.com',
     'https://career-exchange.onrender.com',
+    'https://careerexchange-api.onrender.com',
     process.env.CLIENT_URL
   ].filter(Boolean),
   credentials : true,
@@ -46,7 +47,13 @@ if (process.env.NODE_ENV === 'production') {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  
+  // Don't expose error details in production
+  const error = process.env.NODE_ENV === 'production' 
+    ? 'Internal Server Error' 
+    : err.message || 'Something went wrong!';
+  
+  res.status(err.status || 500).json({ error });
 });
 
 const PORT = process.env.PORT || 3000;

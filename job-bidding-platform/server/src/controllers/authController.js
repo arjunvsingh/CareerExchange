@@ -2,9 +2,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 
-// For development purposes only - in production, use environment variables
-const JWT_SECRET = 'your-secret-key';
-const DEFAULT_PASSWORD = 'password123';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const DEFAULT_PASSWORD = process.env.NODE_ENV === 'production' ? undefined : 'password123';
 
 const authController = {
   // Login user
@@ -13,7 +12,8 @@ const authController = {
       const { email, password } = req.body;
 
       // For development, allow login with default credentials
-      if (email === 'employer@test.com' || email === 'applicant@test.com') {
+      if (process.env.NODE_ENV !== 'production' && 
+          (email === 'employer@test.com' || email === 'applicant@test.com')) {
         console.log('Default credentials used');
         if (password === DEFAULT_PASSWORD) {
           const query = 'SELECT * FROM users WHERE email = $1';
