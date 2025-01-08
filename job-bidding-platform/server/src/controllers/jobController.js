@@ -144,6 +144,49 @@ const jobController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  // Delete a job posting
+  async deleteJob(req, res, next) {
+    try {
+      const { id } = req.params;
+      const jobId = parseInt(id);
+
+      // Validate id format
+      if (!jobId || isNaN(jobId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid job ID format'
+        });
+      }
+
+      // Check if job exists and belongs to the current user
+      const job = await Job.findById(jobId);
+      if (!job) {
+        return res.status(404).json({
+          success: false,
+          error: 'Job not found'
+        });
+      }
+
+      // Verify ownership
+      if (job.employer_id !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          error: 'Not authorized to delete this job'
+        });
+      }
+
+      // Delete the job
+      await Job.delete(jobId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Job deleted successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 };
 

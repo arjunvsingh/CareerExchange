@@ -47,6 +47,25 @@ const EmployerDashboard = () => {
     }
   };
 
+  const handleDeleteJob = async (jobId, event) => {
+    event.stopPropagation(); // Prevent triggering the viewBids click
+    
+    if (!window.confirm('Are you sure you want to delete this job posting?')) {
+      return;
+    }
+
+    try {
+      await api.jobs.delete(jobId);
+      setJobs(jobs.filter(job => job.id !== jobId));
+      if (selectedJob?.id === jobId) {
+        setSelectedJob(null);
+      }
+    } catch (err) {
+      console.error('Error deleting job:', err);
+      setError('Failed to delete job posting');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -87,7 +106,7 @@ const EmployerDashboard = () => {
               {jobs.map(job => (
                 <div 
                   key={job.id}
-                  className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer relative"
                   onClick={() => viewBids(job.id)}
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -95,7 +114,17 @@ const EmployerDashboard = () => {
                       <h3 className="font-semibold">{job.title}</h3>
                       <p className="text-sm text-gray-500">{job.company}</p>
                     </div>
-                    <Badge variant="outline">{job.timeline}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{job.timeline}</Badge>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => handleDeleteJob(job.id, e)}
+                        className="ml-2"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-sm text-gray-600">

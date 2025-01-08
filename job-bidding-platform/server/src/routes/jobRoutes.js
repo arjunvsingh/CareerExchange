@@ -8,6 +8,7 @@ router.use(authMiddleware);
 router.post('/', jobController.createJob);
 router.get('/my-posts', jobController.getMyPostedJobs);
 router.put('/:id', jobController.updateJob);
+router.delete('/:id', jobController.deleteJob);
 
 // Public routes
 router.get('/', jobController.getAllJobs);

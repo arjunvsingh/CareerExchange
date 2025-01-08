@@ -146,6 +146,22 @@ class Job {
       throw error;
     }
   }
+
+  static async delete(id) {
+    const query = `
+      DELETE FROM jobs
+      WHERE id = $1
+      RETURNING id
+    `;
+    
+    try {
+      const result = await db.query(query, [id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error in Job.delete:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = Job;
